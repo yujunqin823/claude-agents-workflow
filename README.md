@@ -137,6 +137,53 @@ claude plugin marketplace remove agents-workflow
 
 ---
 
+## 更新怎么传播(不会自动)
+
+一共有**三份互相独立的副本**,改了任何一份,另外两份都不会自己跟着变:
+
+```
+① 你本地的源文件            ② GitHub 仓库            ③ 别的电脑上的副本
+   claude-agents-workflow/  ──push──▶              ──update──▶   ~/.claude/plugins/cache/
+                                                                  或 clone 下来的那份
+```
+
+**★没有任何一步是自动的。** 每一跳都得你显式推一把。
+
+### ① → ② 你改完,推上去
+
+```bash
+git add -A
+git commit -m "改了什么"
+git push
+```
+
+### ② → ③ 别的电脑拉下来
+
+**插件装的:**
+
+```bash
+claude plugin marketplace update agents-workflow   # 先刷市场,不刷就还是旧目录
+claude plugin update agents-workflow               # 再更新插件
+```
+
+然后**重开编辑器窗口**——`plugin update` 自己也说了 `restart required to apply`。
+
+**clone 装的:**
+
+```bash
+git pull
+```
+
+拉完还没完:`install.ps1` 是**拷贝**文件进项目的,仓库更新了不等于项目里那份更新了,**得重跑一次安装脚本**(要覆盖已有的加 `-Force`)。
+
+### 最容易忘的一处
+
+装进项目里的 `CLAUDE.md` 和 `.claude/agents/*.md` 都是**拷贝,不是链接**。你在项目里顺手改了规则,仓库不知道;仓库更新了,项目也不知道。哪份是权威由你自己定,但别指望它们互相同步。
+
+同理,仓库内部 `CLAUDE.md` 和 `skills/start/SKILL.md` 是同一份正文的两个副本,改了一个记得重新生成另一个(见上面「插件装」那节的重生成脚本)。
+
+---
+
 ## 装完必须重开窗口
 
 **`.claude/agents/` 只在启动时扫一次。** 新增或改名 agent 文件后,不重开编辑器窗口 = 那几个 agent 根本不存在,主会话会安安静静地自己把活干了,你还以为它送审了。
