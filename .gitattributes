@@ -1,0 +1,5 @@
+# 换行必须钉死:install.sh 带上 CRLF 在 Linux/macOS 上会报 `bad interpreter`
+* text=auto eol=lf
+*.sh  text eol=lf
+*.ps1 text eol=crlf
+*.md  text eol=lf
