@@ -151,6 +151,8 @@ claude plugin marketplace remove agents-workflow
 
 ### ① → ② 你改完,推上去
 
+**★如果改的东西要通过「插件装」传出去,先把版本号 +1**——`.claude-plugin/plugin.json` 里那行 `"version"`。为什么见下面那条警告。
+
 ```bash
 git add -A
 git commit -m "改了什么"
@@ -162,11 +164,25 @@ git push
 **插件装的:**
 
 ```bash
-claude plugin marketplace update agents-workflow   # 先刷市场,不刷就还是旧目录
-claude plugin update agents-workflow               # 再更新插件
+claude plugin marketplace update agents-workflow                # 先刷市场
+claude plugin update agents-workflow@agents-workflow            # 再更新插件
 ```
 
-然后**重开编辑器窗口**——`plugin update` 自己也说了 `restart required to apply`。
+两处容易写错:
+
+- **插件名必须写全 `插件名@市场名`。** 只写 `claude plugin update agents-workflow` 会报 `Plugin "agents-workflow" not found`。
+- **市场必须先刷。** 不刷,本地那份市场副本还停在上次 clone 的状态。
+
+更新完**重开编辑器窗口**——命令自己也会提示 `Restart to apply changes`。
+
+> **★★不改版本号 = 永远更不动,而且它会骗你说已经是最新。**
+>
+> 实测:改了内容推上 GitHub、版本号仍是 `1.0.0`,然后 `marketplace update` 成功刷到了新内容,但 `plugin update` 回的是
+> `√ agents-workflow is already at the latest version (1.0.0).` —— **插件副本一个字没变。**
+>
+> 它只比版本号,不比内容。所以每次改完要传出去的东西,`plugin.json` 的 `version` 必须跟着 +1,否则所有装了插件的机器都会停在旧版,而且看起来一切正常。
+>
+> (改完再推一次实测:版本号 `1.0.1` 后同样两条命令,`√ Plugin "agents-workflow" updated from 1.0.0 to 1.0.1`,新内容到位。)
 
 **clone 装的:**
 
@@ -174,7 +190,7 @@ claude plugin update agents-workflow               # 再更新插件
 git pull
 ```
 
-拉完还没完:`install.ps1` 是**拷贝**文件进项目的,仓库更新了不等于项目里那份更新了,**得重跑一次安装脚本**(要覆盖已有的加 `-Force`)。
+拉完还没完:`install.ps1` 是**拷贝**文件进项目的,仓库更新了不等于项目里那份更新了,**得重跑一次安装脚本**(要覆盖已有的加 `-Force`)。这条路没有版本号的坑。
 
 ### 最容易忘的一处
 

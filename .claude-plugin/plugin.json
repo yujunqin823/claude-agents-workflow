@@ -1,6 +1,6 @@
 {
   "name": "agents-workflow",
   "description": "Four-role code-change pipeline for Claude Code: auditor / implementer / scout",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "keywords": ["workflow", "code-review", "agents", "pipeline"]
 }
