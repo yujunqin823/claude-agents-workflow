@@ -199,14 +199,16 @@ agent 文件里写的是**插座名**(`fable` / `sonnet` / `haiku`),不是具体
 | sonnet | `ANTHROPIC_DEFAULT_SONNET_MODEL` | 执行者 |
 | haiku | `ANTHROPIC_DEFAULT_HAIKU_MODEL` | 侦察员 |
 
-一份实际在用的映射,供新电脑抄:
+四个插座填什么,由你的路由层决定。一份**示意**(照着这个形状填你自己的):
 
 ```
-ANTHROPIC_MODEL                 = claude/claude-opus-5
-ANTHROPIC_DEFAULT_FABLE_MODEL   = OpenAI/gpt-5.6-sol        ← 跟主会话不同源,这条是关键
-ANTHROPIC_DEFAULT_SONNET_MODEL  = DeepSeek/deepseek-v4-pro
-ANTHROPIC_DEFAULT_HAIKU_MODEL   = DeepSeek/deepseek-v4-flash
+ANTHROPIC_MODEL                 = <厂商A>/<你的主力模型>
+ANTHROPIC_DEFAULT_FABLE_MODEL   = <厂商B>/<另一家的模型>   ← 必须跟主会话不同源,这条是关键
+ANTHROPIC_DEFAULT_SONNET_MODEL  = <厂商C>/<干活快的模型>
+ANTHROPIC_DEFAULT_HAIKU_MODEL   = <厂商C>/<最便宜的模型>
 ```
+
+**唯一不能将就的是 fable 那行**:审查员跟主会话必须来自不同厂商。剩下三个怎么填都行,填错了最多是慢一点、贵一点,填成同一家审查员就白设了。
 
 **如果启动后某个 agent 用不了,多半是插座名你的环境不认。** 打开对应的 `.md`,把 frontmatter 里的 `model:` 换成你环境认的值:
 

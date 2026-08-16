@@ -4,3 +4,6 @@ Thumbs.db
 *~
 .idea/
 .vscode/
+
+# 本地私有备忘,永远不上传
+*.local.md
