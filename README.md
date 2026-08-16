@@ -21,7 +21,7 @@ agents/*.md                      → 放到 .claude/agents/(三个角色的岗�
 install.ps1                      → Windows 一键装
 install.sh                       → macOS / Linux 一键装
 
-skills/agents-workflow/SKILL.md  → 排班规则的 skill 版 ┐ 只有走「插件装」
+skills/start/SKILL.md            → 排班规则的 skill 版 ┐ 只有走「插件装」
 .claude-plugin/*.json            → 插件 / 市场清单      ┘ 才用得到这两样
 ```
 
@@ -32,9 +32,17 @@ skills/agents-workflow/SKILL.md  → 排班规则的 skill 版 ┐ 只有走「�
 | 怎么来 | 拷文件夹过去 | `claude plugin marketplace add` 你的 git 仓库 |
 | 作用范围 | 每个项目单独装 | 装一次全机器生效 |
 | 更新 | 每台机器手动重拷 | `claude plugin update` |
-| 排班规则的强制力 | **强**(`CLAUDE.md` 无条件在上下文里) | **弱**(skill 要敲 `/agents-workflow` 才加载) |
+| 排班规则的强制力 | **强**(`CLAUDE.md` 无条件在上下文里) | **弱**(skill 要敲 `/agents-workflow:start` 才加载) |
 
 **强制力这一栏是真正的区别。** 插件系统的组件只有 Skills / Agents / Hooks / MCP 四类,**没有"常驻上下文"这一类**——所以 `CLAUDE.md` 那条「所有代码改动都必须走工作流」在插件路线下没法自动生效。要那条硬规则,就得把 `CLAUDE.md` 放进项目根目录,两条路可以叠着用。
+
+> **改规则的时候注意:** `skills/start/SKILL.md` 的正文是 `CLAUDE.md` 的逐字副本(只多了顶上四行 frontmatter)。**改了 `CLAUDE.md` 必须同步过去**,否则两条路线的规则会悄悄分叉——一边改了另一边没改,而且不报错。同步命令(PowerShell):
+>
+> ```powershell
+> $b = [IO.File]::ReadAllText("CLAUDE.md", [Text.Encoding]::UTF8)
+> $f = (Get-Content "skills\start\SKILL.md" -Raw -Encoding UTF8) -split "(?m)^---$" | Select-Object -Index 1
+> [IO.File]::WriteAllText("skills\start\SKILL.md", "---$f---`n`n$b", (New-Object Text.UTF8Encoding($false)))
+> ```
 
 ### 一键装(推荐)
 
@@ -88,14 +96,20 @@ claude plugin install agents-workflow@agents-workflow
 
 ```
 Component inventory
-  Skills (1)  agents-workflow
+  Skills (1)  start
   Agents (3)  auditor, implementer, scout
 
 Projected token cost
-  Always-on:   ~397 tok   added to every session
+  Always-on:   ~395 tok   added to every session
 ```
 
-三个 agent 直接可用(**不用重开窗口**,插件走的是另一条加载路径),排班规则敲 `/agents-workflow` 加载。
+三个 agent 直接可用(**不用重开窗口**,插件走的是另一条加载路径),排班规则敲:
+
+```
+/agents-workflow:start
+```
+
+**这个 `插件名:技能名` 的前缀是自动加的,不用你记。** 它也顺便解决了撞名问题——你装十个插件,各占各的前缀,谁也盖不掉谁。而且插件市场是**你自己一台台加的**,不存在全球共用的命名空间,别人叫什么跟你无关。
 
 以后规则改了,推到仓库,每台电脑 `claude plugin update agents-workflow` 就同步了——这是插件路线相对拷文件夹唯一的、也是真正的好处。
 
@@ -109,7 +123,7 @@ claude plugin marketplace remove agents-workflow
 **两个提醒:**
 
 - **插件装是全局的**(user 作用域),所有项目都会吃到这三个 agent 和约 397 token 的常驻开销。只想在个别项目试,用上面的一键装。
-- **`/agents-workflow` 是手动的。** 你不敲,主会话不一定会自觉走流水线。要「一律送审」的强制力,还是得把 `CLAUDE.md` 放进那个项目的根目录。
+- **`/agents-workflow:start` 是手动的。** 你不敲,主会话不一定会自觉走流水线。要「一律送审」的强制力,还是得把 `CLAUDE.md` 放进那个项目的根目录。
 
 ### 搬到别的电脑
 

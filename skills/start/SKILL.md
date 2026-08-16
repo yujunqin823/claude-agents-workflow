@@ -1,5 +1,5 @@
 ---
-name: agents-workflow
+name: start
 description: Four-role code-change pipeline (auditor / implementer / scout). 需要改代码时加载——加功能、改模块、重构、修 BUG 都算。它规定计划怎么写、什么时候送审两次、循环上限怎么算、什么情况才能打断用户。
 ---
 
