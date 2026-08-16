@@ -88,7 +88,7 @@ chmod +x install.sh          # 从 zip 解出来的,执行位会丢
 这个仓库同时是一个 **Claude Code 插件**和一个**插件市场**,所以任何一台装了 Claude Code 的电脑,两条命令就能装上:
 
 ```bash
-claude plugin marketplace add <你的账号>/claude-agents-workflow
+claude plugin marketplace add yujunqin823/claude-agents-workflow
 claude plugin install agents-workflow@agents-workflow
 ```
 
@@ -129,8 +129,8 @@ claude plugin marketplace remove agents-workflow
 
 整个文件夹就是全部内容,**没有任何依赖、没有安装过程**。三条路,由省事到麻烦:
 
-1. **插件装** —— `claude plugin marketplace add <你的账号>/claude-agents-workflow`,见上一节。以后靠 `plugin update` 同步。
-2. **git clone** —— 新电脑 `git clone` 仓库,再跑 `install.ps1`。要更新就 `git pull` 后重跑。
+1. **插件装** —— `claude plugin marketplace add yujunqin823/claude-agents-workflow`,见上一节。以后靠 `plugin update` 同步。
+2. **git clone** —— 新电脑 `git clone https://github.com/yujunqin823/claude-agents-workflow.git`,再跑 `install.ps1`。要更新就 `git pull` 后重跑。
 3. **拷 zip** —— 打包丢 U 盘 / 网盘 / 微信,解压跑 `install.ps1`。不用配任何凭证,但以后每次改规则都得手动重拷一遍。
 
 新电脑上唯一要**重新配**的不是这些文件,是**插座映射**——`fable` / `sonnet` / `haiku` 分别指向哪个模型,那份配置在你的路由层(CCR 之类)里,**不在这个仓库里,也不会跟着 clone 过来**。见下面「插座和模型」。
