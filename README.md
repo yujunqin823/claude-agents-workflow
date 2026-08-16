@@ -16,11 +16,25 @@
 仓库结构:
 
 ```
-CLAUDE.md          → 放到项目根目录(排班规则,写给主会话)
-agents/*.md        → 放到 .claude/agents/(三个角色的岗位说明书)
-install.ps1        → Windows 一键装
-install.sh         → macOS / Linux 一键装
+CLAUDE.md                        → 放到项目根目录(排班规则,写给主会话)
+agents/*.md                      → 放到 .claude/agents/(三个角色的岗位说明书)
+install.ps1                      → Windows 一键装
+install.sh                       → macOS / Linux 一键装
+
+skills/agents-workflow/SKILL.md  → 排班规则的 skill 版 ┐ 只有走「插件装」
+.claude-plugin/*.json            → 插件 / 市场清单      ┘ 才用得到这两样
 ```
+
+装法有两条路,**选一条就够**:
+
+| | 一键装 / 手动装 | 插件装 |
+|---|---|---|
+| 怎么来 | 拷文件夹过去 | `claude plugin marketplace add` 你的 git 仓库 |
+| 作用范围 | 每个项目单独装 | 装一次全机器生效 |
+| 更新 | 每台机器手动重拷 | `claude plugin update` |
+| 排班规则的强制力 | **强**(`CLAUDE.md` 无条件在上下文里) | **弱**(skill 要敲 `/agents-workflow` 才加载) |
+
+**强制力这一栏是真正的区别。** 插件系统的组件只有 Skills / Agents / Hooks / MCP 四类,**没有"常驻上下文"这一类**——所以 `CLAUDE.md` 那条「所有代码改动都必须走工作流」在插件路线下没法自动生效。要那条硬规则,就得把 `CLAUDE.md` 放进项目根目录,两条路可以叠着用。
 
 ### 一键装(推荐)
 
@@ -61,14 +75,51 @@ chmod +x install.sh          # 从 zip 解出来的,执行位会丢
 
 项目级和全局可以同时存在,项目级的优先。
 
+### 插件装(换电脑最省事)
+
+这个仓库同时是一个 **Claude Code 插件**和一个**插件市场**,所以任何一台装了 Claude Code 的电脑,两条命令就能装上:
+
+```bash
+claude plugin marketplace add <你的账号>/claude-agents-workflow
+claude plugin install agents-workflow@agents-workflow
+```
+
+装完 `claude plugin details agents-workflow` 会显示:
+
+```
+Component inventory
+  Skills (1)  agents-workflow
+  Agents (3)  auditor, implementer, scout
+
+Projected token cost
+  Always-on:   ~397 tok   added to every session
+```
+
+三个 agent 直接可用(**不用重开窗口**,插件走的是另一条加载路径),排班规则敲 `/agents-workflow` 加载。
+
+以后规则改了,推到仓库,每台电脑 `claude plugin update agents-workflow` 就同步了——这是插件路线相对拷文件夹唯一的、也是真正的好处。
+
+不想用了:
+
+```bash
+claude plugin uninstall agents-workflow
+claude plugin marketplace remove agents-workflow
+```
+
+**两个提醒:**
+
+- **插件装是全局的**(user 作用域),所有项目都会吃到这三个 agent 和约 397 token 的常驻开销。只想在个别项目试,用上面的一键装。
+- **`/agents-workflow` 是手动的。** 你不敲,主会话不一定会自觉走流水线。要「一律送审」的强制力,还是得把 `CLAUDE.md` 放进那个项目的根目录。
+
 ### 搬到别的电脑
 
-整个文件夹就是全部内容,**没有任何依赖、没有安装过程**,拷过去就能用:
+整个文件夹就是全部内容,**没有任何依赖、没有安装过程**。三条路,由省事到麻烦:
 
-- 打包成 zip,U 盘 / 网盘 / 微信传过去,解压,跑 `install.ps1`
-- 或者把这个文件夹推到你自己的 git 仓库,新电脑 `git clone`
+1. **插件装** —— `claude plugin marketplace add <你的账号>/claude-agents-workflow`,见上一节。以后靠 `plugin update` 同步。
+2. **git clone** —— 新电脑 `git clone` 仓库,再跑 `install.ps1`。要更新就 `git pull` 后重跑。
+3. **拷 zip** —— 打包丢 U 盘 / 网盘 / 微信,解压跑 `install.ps1`。不用配任何凭证,但以后每次改规则都得手动重拷一遍。
 
-新电脑上唯一要**重新配**的不是这些文件,是**插座映射**——`fable` / `sonnet` / `haiku` 分别指向哪个模型,那份配置在你的路由层(CCR 之类)里,不在这个仓库里。见下面「插座和模型」。
+新电脑上唯一要**重新配**的不是这些文件,是**插座映射**——`fable` / `sonnet` / `haiku` 分别指向哪个模型,那份配置在你的路由层(CCR 之类)里,**不在这个仓库里,也不会跟着 clone 过来**。见下面「插座和模型」。
 
 ---
 

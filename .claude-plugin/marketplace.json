@@ -1,0 +1,8 @@
+{
+  "name": "agents-workflow",
+  "description": "Four-role code-change pipeline for Claude Code",
+  "owner": { "name": "agents-workflow" },
+  "plugins": [
+    { "name": "agents-workflow", "source": "./" }
+  ]
+}
