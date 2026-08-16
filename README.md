@@ -68,7 +68,7 @@ chmod +x install.sh          # 从 zip 解出来的,执行位会丢
 
 整个文件夹就是全部内容,**没有任何依赖、没有安装过程**。两条路:
 
-1. **git clone**(推荐)—— 新电脑 `git clone <你的仓库地址>`,再跑 `install.ps1`。以后更新一条 `git pull` 就够,见下面「更新怎么传播」。
+1. **git clone**(推荐)—— 新电脑 `git clone https://github.com/yujunqin823/claude-agents-workflow`,再跑 `install.ps1`。以后更新一条 `git pull` 就够,见下面「更新怎么传播」。
 2. **拷 zip** —— 打包丢 U 盘 / 网盘 / 微信,解压跑 `install.ps1`。不用配任何账号,但以后每次改规则都得手动重拷一遍。
 
 新电脑上唯一要**重新配**的不是这些文件,是**插座映射**——`fable` / `sonnet` / `haiku` 分别指向哪个模型,那份配置在你的路由层(CCR 之类)里,**不在这个仓库里,也不会跟着 clone 过来**。见下面「插座和模型」。

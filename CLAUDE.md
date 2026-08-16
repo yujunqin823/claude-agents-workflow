@@ -318,3 +318,29 @@ BLOCK 后**我自己跟审查员对弈**:按缺陷改计划、再送审、再改
 ```
 
 `CLAUDE.md` 同理:项目根目录的只管这个项目,`~/.claude/CLAUDE.md` 全局生效。
+
+## 这份规范怎么更新
+
+这份文件不是手写在这个项目里的,它有个源头仓库:
+
+```
+https://github.com/yujunqin823/claude-agents-workflow
+```
+
+用户说「更新一下工作流」「更新一下 agents 规范」,意思就是**从这个仓库拉最新版覆盖掉本地这份**。不用问他地址,地址就在上面。做法:
+
+```bash
+# 找个地方克隆下来(已经有了就 cd 进去 git pull)
+git clone https://github.com/yujunqin823/claude-agents-workflow
+cd claude-agents-workflow && git pull
+
+# 再把最新版装进目标项目(-Force / --force 才会覆盖已有的 CLAUDE.md)
+.\install.ps1 -Target "<项目根目录>" -Force     # Windows
+./install.sh   "<项目根目录>" --force           # macOS / Linux
+```
+
+装完的东西是**拷贝不是链接**——仓库更新了,已经装出去的项目不会自己跟着变,每个项目都得重跑一次安装脚本。
+
+**装完必须重开编辑器窗口**,理由见上面「生效方式」。
+
+反过来,如果是在这台电脑上**改**了规范,改完要 `git push` 推回仓库,别的电脑才拉得到。只改项目里这一份等于没改,别人拉不到。
