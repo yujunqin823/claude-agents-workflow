@@ -20,29 +20,10 @@ CLAUDE.md                        → 放到项目根目录(排班规则,写给�
 agents/*.md                      → 放到 .claude/agents/(三个角色的岗位说明书)
 install.ps1                      → Windows 一键装
 install.sh                       → macOS / Linux 一键装
-
-skills/start/SKILL.md            → 排班规则的 skill 版 ┐ 只有走「插件装」
-.claude-plugin/*.json            → 插件 / 市场清单      ┘ 才用得到这两样
+PROJECT-NOTES.template.md        → 新项目照着填自己的坑
 ```
 
-装法有两条路,**选一条就够**:
-
-| | 一键装 / 手动装 | 插件装 |
-|---|---|---|
-| 怎么来 | 拷文件夹过去 | `claude plugin marketplace add` 你的 git 仓库 |
-| 作用范围 | 每个项目单独装 | 装一次全机器生效 |
-| 更新 | 每台机器手动重拷 | `claude plugin update` |
-| 排班规则的强制力 | **强**(`CLAUDE.md` 无条件在上下文里) | **弱**(skill 要敲 `/agents-workflow:start` 才加载) |
-
-**强制力这一栏是真正的区别。** 插件系统的组件只有 Skills / Agents / Hooks / MCP 四类,**没有"常驻上下文"这一类**——所以 `CLAUDE.md` 那条「所有代码改动都必须走工作流」在插件路线下没法自动生效。要那条硬规则,就得把 `CLAUDE.md` 放进项目根目录,两条路可以叠着用。
-
-> **改规则的时候注意:** `skills/start/SKILL.md` 的正文是 `CLAUDE.md` 的逐字副本(只多了顶上四行 frontmatter)。**改了 `CLAUDE.md` 必须同步过去**,否则两条路线的规则会悄悄分叉——一边改了另一边没改,而且不报错。同步命令(PowerShell):
->
-> ```powershell
-> $b = [IO.File]::ReadAllText("CLAUDE.md", [Text.Encoding]::UTF8)
-> $f = (Get-Content "skills\start\SKILL.md" -Raw -Encoding UTF8) -split "(?m)^---$" | Select-Object -Index 1
-> [IO.File]::WriteAllText("skills\start\SKILL.md", "---$f---`n`n$b", (New-Object Text.UTF8Encoding($false)))
-> ```
+装法两条,**选一条就够**:一键装(跑脚本)或手动装(自己拷四个文件)。两条的结果完全一样。
 
 ### 一键装(推荐)
 
@@ -83,55 +64,12 @@ chmod +x install.sh          # 从 zip 解出来的,执行位会丢
 
 项目级和全局可以同时存在,项目级的优先。
 
-### 插件装(换电脑最省事)
-
-这个仓库同时是一个 **Claude Code 插件**和一个**插件市场**,所以任何一台装了 Claude Code 的电脑,两条命令就能装上:
-
-```bash
-claude plugin marketplace add yujunqin823/claude-agents-workflow
-claude plugin install agents-workflow@agents-workflow
-```
-
-装完 `claude plugin details agents-workflow` 会显示:
-
-```
-Component inventory
-  Skills (1)  start
-  Agents (3)  auditor, implementer, scout
-
-Projected token cost
-  Always-on:   ~395 tok   added to every session
-```
-
-三个 agent 直接可用(**不用重开窗口**,插件走的是另一条加载路径),排班规则敲:
-
-```
-/agents-workflow:start
-```
-
-**这个 `插件名:技能名` 的前缀是自动加的,不用你记。** 它也顺便解决了撞名问题——你装十个插件,各占各的前缀,谁也盖不掉谁。而且插件市场是**你自己一台台加的**,不存在全球共用的命名空间,别人叫什么跟你无关。
-
-以后规则改了,推到仓库,每台电脑 `claude plugin update agents-workflow` 就同步了——这是插件路线相对拷文件夹唯一的、也是真正的好处。
-
-不想用了:
-
-```bash
-claude plugin uninstall agents-workflow
-claude plugin marketplace remove agents-workflow
-```
-
-**两个提醒:**
-
-- **插件装是全局的**(user 作用域),所有项目都会吃到这三个 agent 和约 397 token 的常驻开销。只想在个别项目试,用上面的一键装。
-- **`/agents-workflow:start` 是手动的。** 你不敲,主会话不一定会自觉走流水线。要「一律送审」的强制力,还是得把 `CLAUDE.md` 放进那个项目的根目录。
-
 ### 搬到别的电脑
 
-整个文件夹就是全部内容,**没有任何依赖、没有安装过程**。三条路,由省事到麻烦:
+整个文件夹就是全部内容,**没有任何依赖、没有安装过程**。两条路:
 
-1. **插件装** —— `claude plugin marketplace add yujunqin823/claude-agents-workflow`,见上一节。以后靠 `plugin update` 同步。
-2. **git clone** —— 新电脑 `git clone https://github.com/yujunqin823/claude-agents-workflow.git`,再跑 `install.ps1`。要更新就 `git pull` 后重跑。
-3. **拷 zip** —— 打包丢 U 盘 / 网盘 / 微信,解压跑 `install.ps1`。不用配任何凭证,但以后每次改规则都得手动重拷一遍。
+1. **git clone**(推荐)—— 新电脑 `git clone <你的仓库地址>`,再跑 `install.ps1`。以后更新一条 `git pull` 就够,见下面「更新怎么传播」。
+2. **拷 zip** —— 打包丢 U 盘 / 网盘 / 微信,解压跑 `install.ps1`。不用配任何账号,但以后每次改规则都得手动重拷一遍。
 
 新电脑上唯一要**重新配**的不是这些文件,是**插座映射**——`fable` / `sonnet` / `haiku` 分别指向哪个模型,那份配置在你的路由层(CCR 之类)里,**不在这个仓库里,也不会跟着 clone 过来**。见下面「插座和模型」。
 
@@ -142,16 +80,11 @@ claude plugin marketplace remove agents-workflow
 一共有**三份互相独立的副本**,改了任何一份,另外两份都不会自己跟着变:
 
 ```
-① 你本地的源文件            ② GitHub 仓库            ③ 别的电脑上的副本
-   claude-agents-workflow/  ──push──▶              ──update──▶   ~/.claude/plugins/cache/
-                                                                  或 clone 下来的那份
+① 你这台电脑的仓库          ② 远端仓库(GitHub 等)      ③ 别的电脑上的仓库
+   claude-agents-workflow/  ──git push──▶              ──git pull──▶
 ```
 
-**★没有任何一步是自动的。** 每一跳都得你显式推一把。
-
 ### ① → ② 你改完,推上去
-
-**★如果改的东西要通过「插件装」传出去,先把版本号 +1**——`.claude-plugin/plugin.json` 里那行 `"version"`。为什么见下面那条警告。
 
 ```bash
 git add -A
@@ -161,42 +94,25 @@ git push
 
 ### ② → ③ 别的电脑拉下来
 
-**插件装的:**
-
-```bash
-claude plugin marketplace update agents-workflow                # 先刷市场
-claude plugin update agents-workflow@agents-workflow            # 再更新插件
-```
-
-两处容易写错:
-
-- **插件名必须写全 `插件名@市场名`。** 只写 `claude plugin update agents-workflow` 会报 `Plugin "agents-workflow" not found`。
-- **市场必须先刷。** 不刷,本地那份市场副本还停在上次 clone 的状态。
-
-更新完**重开编辑器窗口**——命令自己也会提示 `Restart to apply changes`。
-
-> **★★不改版本号 = 永远更不动,而且它会骗你说已经是最新。**
->
-> 实测:改了内容推上 GitHub、版本号仍是 `1.0.0`,然后 `marketplace update` 成功刷到了新内容,但 `plugin update` 回的是
-> `√ agents-workflow is already at the latest version (1.0.0).` —— **插件副本一个字没变。**
->
-> 它只比版本号,不比内容。所以每次改完要传出去的东西,`plugin.json` 的 `version` 必须跟着 +1,否则所有装了插件的机器都会停在旧版,而且看起来一切正常。
->
-> (改完再推一次实测:版本号 `1.0.1` 后同样两条命令,`√ Plugin "agents-workflow" updated from 1.0.0 to 1.0.1`,新内容到位。)
-
-**clone 装的:**
-
 ```bash
 git pull
 ```
 
-拉完还没完:`install.ps1` 是**拷贝**文件进项目的,仓库更新了不等于项目里那份更新了,**得重跑一次安装脚本**(要覆盖已有的加 `-Force`)。这条路没有版本号的坑。
+git 比的是提交内容,**改一个字它也知道**,不需要版本号之类的东西。
+
+### 拉完还有一步:重跑安装脚本
+
+`install.ps1` 是把文件**拷贝**进项目的,所以 `git pull` 只更新了仓库那份,项目里那份还是旧的:
+
+```powershell
+.\install.ps1 -Path <项目目录> -Force
+```
+
+有几个项目就跑几次。`-Force` 是允许覆盖已有文件,不加它不会动你现有的 `CLAUDE.md`。
 
 ### 最容易忘的一处
 
-装进项目里的 `CLAUDE.md` 和 `.claude/agents/*.md` 都是**拷贝,不是链接**。你在项目里顺手改了规则,仓库不知道;仓库更新了,项目也不知道。哪份是权威由你自己定,但别指望它们互相同步。
-
-同理,仓库内部 `CLAUDE.md` 和 `skills/start/SKILL.md` 是同一份正文的两个副本,改了一个记得重新生成另一个(见上面「插件装」那节的重生成脚本)。
+装进项目里的 `CLAUDE.md` 和 `.claude/agents/*.md` 都是**拷贝,不是链接**。你在某个项目里顺手改了规则,仓库不知道;仓库更新了,那个项目也不知道。哪份算权威由你自己定,但别指望它们互相同步。
 
 ---
 
