@@ -65,10 +65,39 @@ if (-not (Test-Path -LiteralPath $agentsDir)) {
 $agentFiles = Get-ChildItem -LiteralPath (Join-Path $src 'agents') -Filter '*.md' -File
 if ($agentFiles.Count -eq 0) { Fail "本仓库的 agents\ 目录里没有 .md 文件" }
 
+$changed = 0
+$kept    = 0
 foreach ($f in $agentFiles) {
     $dst = Join-Path $agentsDir $f.Name
+    $backup = $null
+    if (Test-Path -LiteralPath $dst) {
+        $srcHash = (Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash
+        $dstHash = (Get-FileHash -LiteralPath $dst -Algorithm SHA256).Hash
+        if ($srcHash -eq $dstHash) {
+            Ok ".claude\agents\$($f.Name)"
+            continue
+        }
+        # Never reuse an existing backup name — a second install must not destroy the
+        # first backup, which holds the project's own localized content.
+        $backup = "$dst.bak"
+        $n = 1
+        while (Test-Path -LiteralPath $backup) {
+            $backup = "$dst.bak.$n"
+            $n++
+        }
+        Copy-Item -LiteralPath $dst -Destination $backup -Force
+        Skip ".claude\agents\$($f.Name) 已被本地改过,原件备份到 $(Split-Path $backup -Leaf)"
+        $kept++
+    }
     Copy-Item -LiteralPath $f.FullName -Destination $dst -Force
-    Ok ".claude\agents\$($f.Name)"
+    $changed++
+}
+
+if ($kept -gt 0) {
+    Write-Host ""
+    Write-Host "  有 $kept 个 agent 文件是本地改过的,已逐个备份再覆盖。" -ForegroundColor Yellow
+    Write-Host "  备份名见上面每一行的 SKIP 提示。想把本地改动并回去:diff 备份和当前文件。" -ForegroundColor Yellow
+    Write-Host "  备份会累积,确认不需要了就自己删。" -ForegroundColor Yellow
 }
 
 # --- CLAUDE.md ---

@@ -150,6 +150,30 @@ State uncertainty rather than guessing. "This looks wrong but may be intentional
        not a rounding bug. Removing it yields a cheaper but physically unshippable box.
      Anything you add here saves a full audit round the first time it comes up. -->
 
+### Simpler-alternative fact-check (large changes only)
+
+If — and only if — the plan contains a 「更简单的做法」 section, fact-check its 「没选它的理由」
+field. Treat that sentence as a claim about the code, not as the plan's opinion, and go read the
+code to see whether the claim is true.
+
+- **The reason does not hold** → NOTE. Say where it is wrong, and whether the simpler approach
+  would in fact cover the need.
+- **The reason holds** → say nothing. No credit, no comment.
+- **「它能达成的部分」 is blank or obviously trivial** → NOTE that this "simple approach" does not
+  read as a serious candidate.
+
+**This check is NOTE-only, never a BLOCK.** A wrong rejection reason produces no runtime error, so
+it cannot satisfy the trigger-path requirement above (`Input X → hits code at file:line → produces
+error Z`).
+
+**If the plan has no 「更简单的做法」 section, skip this entirely.** Small changes are not required
+to have one, and its absence is not a defect.
+
+**Do not expand this into a taste review.** You check only the two fields the plan itself wrote.
+"I think it should be simpler" and "a different approach would be better" are not findings — they
+dilute the BLOCK/NOTE boundary into personal preference, which is what the boundary exists to
+prevent.
+
 ## Your verdict
 
 End your response with exactly one of these two blocks.

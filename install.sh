@@ -60,10 +60,34 @@ shopt -s nullglob
 agents=("$SRC"/agents/*.md)
 [ "${#agents[@]}" -gt 0 ] || { echo "ERROR: 本仓库的 agents/ 目录里没有 .md 文件" >&2; exit 1; }
 
+kept=0
 for f in "${agents[@]}"; do
+  base="$(basename "$f")"
+  dst="$AGENTS_DIR/$base"
+  if [ -f "$dst" ] && ! cmp -s "$f" "$dst"; then
+    # Never reuse an existing backup name — a second install must not destroy the
+    # first backup, which holds the project's own localized content.
+    backup="$dst.bak"
+    n=1
+    while [ -e "$backup" ]; do
+      backup="$dst.bak.$n"
+      n=$((n + 1))
+    done
+    cp -f "$dst" "$backup"
+    echo "  SKIP .claude/agents/$base 已被本地改过,原件备份到 $(basename "$backup")"
+    kept=$((kept + 1))
+  else
+    echo "  OK   .claude/agents/$base"
+  fi
   cp -f "$f" "$AGENTS_DIR/"
-  echo "  OK   .claude/agents/$(basename "$f")"
 done
+
+if [ "$kept" -gt 0 ]; then
+  echo
+  echo "  有 $kept 个 agent 文件是本地改过的,已逐个备份再覆盖。"
+  echo "  备份名见上面每一行的 SKIP 提示。想把本地改动并回去:diff 备份和当前文件。"
+  echo "  备份会累积,确认不需要了就自己删。"
+fi
 
 # --- CLAUDE.md ---
 [ -f "$SRC/CLAUDE.md" ] || { echo "ERROR: 本仓库缺少 CLAUDE.md" >&2; exit 1; }
